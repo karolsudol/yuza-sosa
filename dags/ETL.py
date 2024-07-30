@@ -1,12 +1,11 @@
 """
 This module contains an Airflow DAG for analyzing UserOperation events.
-It fetches data from Dune Analytics processes it, and stores the results in PostgreSQL.
+It fetches data from Dune Analytics, processes it, and stores the results in PostgreSQL.
 """
 
 from datetime import datetime, timedelta
 from airflow.hooks.base import BaseHook
 from airflow.exceptions import AirflowException
-
 
 PREVIOUS_DAY = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
@@ -61,13 +60,14 @@ if AIRFLOW_AVAILABLE:
         dag=dag,
     )
 
-    print_execution_date = PythonOperator(
+    print_execution_date_task = PythonOperator(
         task_id="print_execution_date",
-        python_callable=print_execution_date(PREVIOUS_DAY),
+        python_callable=print_execution_date,
+        op_args=[PREVIOUS_DAY],  # Pass the argument here
         dag=dag,
     )
 
-    check_connection >> print_execution_date
+    check_connection >> print_execution_date_task
 
 else:
     print("Airflow not available. DAG not created.")
