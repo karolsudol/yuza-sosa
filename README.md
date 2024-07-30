@@ -87,7 +87,16 @@ If you prefer to run the commands manually, you can use the following Make comma
 To modify the analysis or add new features:
 
 1. Edit the `dags/daily_etl.py` file
-2. Rebuild the Docker images and Restart the services using `sync-dags`
+2. Rebuild the Docker images and Restart the services using
+```bash
+make sync-dags
+```
+3. If updated dependencies in `requirements.txt` then make sure Airflow has the latest dependencies by running:
+```bash
+make build
+make down
+make up
+```
 
 ### Testing
 ------
