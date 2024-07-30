@@ -2,6 +2,9 @@ VENV = venv
 PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 
+include .env
+export
+
 $(VENV)/bin/activate: requirements.txt
 	python3 -m venv $(VENV)
 	$(PIP) install -r requirements.txt
@@ -29,7 +32,7 @@ shell:
 init:
 	docker-compose up -d postgres
 	docker-compose run --rm airflow-webserver airflow db init
-	docker-compose run --rm airflow-webserver airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin
+	docker-compose run --rm airflow-webserver airflow users create --username $(AIRFLOW_WWW_USER_USERNAME) --firstname Admin --lastname User --role Admin --email admin@example.com --password $(AIRFLOW_WWW_USER_PASSWORD)
 	docker-compose down
 
 run:
