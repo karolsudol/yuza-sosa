@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+source .env
+
 check_docker() {
     if ! command -v docker &> /dev/null; then
         echo "Docker is not installed. Please install Docker and try again."
@@ -54,23 +56,21 @@ wait_for_service() {
 
 configure_grafana() {
     echo "Configuring Grafana..."
-    # Wait for Grafana to be up
-    until curl -s http://localhost:3000 > /dev/null; do
+    until curl -s http://localhost:${GRAFANA_PORT} > /dev/null; do
         echo "Waiting for Grafana to start..."
         sleep 5
     done
 
-    # Add PostgreSQL as a data source
     curl -X POST -H "Content-Type: application/json" -d '{
         "name":"PostgreSQL",
         "type":"postgres",
-        "url":"postgres:5432",
+        "url":"postgres:${POSTGRES_PORT}",
         "database":"'${POSTGRES_DB}'",
         "user":"'${POSTGRES_USER}'",
         "password":"'${POSTGRES_PASSWORD}'",
         "access":"proxy",
         "basicAuth":false
-    }' http://admin:admin@localhost:3000/api/datasources
+    }' http://${GF_SECURITY_ADMIN_USER}:${GF_SECURITY_ADMIN_PASSWORD}@localhost:${GRAFANA_PORT}/api/datasources
     
     echo "Grafana configured with PostgreSQL data source."
 }
@@ -78,20 +78,14 @@ configure_grafana() {
 main() {
     check_docker
     check_docker_compose
-    check_port_available 8080
-    check_port_available 5432
-    check_port_available 3000
+    check_port_available ${AIRFLOW_WEBSERVER_PORT}
+    check_port_available ${POSTGRES_PORT}
+    check_port_available ${GRAFANA_PORT}
 
     echo "Setting up Airflow with Grafana and PostgreSQL..."
 
     echo "Building Docker images..."
     make build
-
-    # echo "Running tests..."
-    # run_tests
-
-    echo "Skippping tests..."
-    run_tests
 
     echo "Initializing Airflow..."
     make init
@@ -107,10 +101,10 @@ main() {
     configure_grafana
 
     echo "Setup complete! Services are now running."
-    echo "You can access the Airflow web interface at http://localhost:8080"
+    echo "You can access the Airflow web interface at http://localhost:${AIRFLOW_WEBSERVER_PORT}"
     echo "Username: $AIRFLOW_WWW_USER_USERNAME"
     echo "Password: $AIRFLOW_WWW_USER_PASSWORD"
-    echo "You can access the Grafana web interface at http://localhost:3000"
+    echo "You can access the Grafana web interface at http://localhost:${GRAFANA_PORT}"
     echo "Username: $GF_SECURITY_ADMIN_USER"
     echo "Password: $GF_SECURITY_ADMIN_PASSWORD"
     

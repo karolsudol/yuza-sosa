@@ -31,10 +31,9 @@ shell:
 
 init:
 	docker-compose up -d postgres
-	docker-compose run --rm airflow-webserver airflow db init
-	docker-compose run --rm airflow-webserver airflow users create --username $(AIRFLOW_WWW_USER_USERNAME) --firstname Admin --lastname User --role Admin --email admin@example.com --password $(AIRFLOW_WWW_USER_PASSWORD)
+	docker-compose run --rm --user "${AIRFLOW_UID}:0" airflow-webserver airflow db init
+	docker-compose run --rm --user "${AIRFLOW_UID}:0" airflow-webserver airflow users create --username $(AIRFLOW_WWW_USER_USERNAME) --firstname Admin --lastname User --role Admin --email admin@example.com --password $(AIRFLOW_WWW_USER_PASSWORD)
 	docker-compose down
-
 run:
 	docker-compose up
 
