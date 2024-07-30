@@ -57,6 +57,12 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
+this will set up the Docker images, initialize Airflow, start Airflow services, and run the DAGs.
+
+with
+- airflow on http://localhost:8080/
+- graphana on http://localhost:3000/
+
 ### Manual Setup
 -------------
 
@@ -114,7 +120,7 @@ To access the DB data:
 
 1. `docker exec -it yuza-sosa-postgres-1 bash`
 2. `psql -U airflow -d airflow`
-3. `SELECT * FROM .... LIMIT 10;`
+3. `SELECT * FROM user_operations LIMIT 10;`
 
 ### Troubleshooting
 -----------------
