@@ -9,6 +9,11 @@ RUN apt-get update && apt-get install -y postgresql-client \
     wget \
     gnupg2
 
+# Create airflow the logs directory and set correct permissions
+RUN mkdir -p /opt/airflow/logs /opt/airflow/dags /opt/airflow/plugins \
+    && chown -R airflow:root /opt/airflow \
+    && chmod -R g+w /opt/airflow
+
 # Add Grafana GPG key and repository
 RUN wget -q -O - https://packages.grafana.com/gpg.key | apt-key add -
 RUN echo "deb https://packages.grafana.com/oss/deb stable main" | tee -a /etc/apt/sources.list.d/grafana.list

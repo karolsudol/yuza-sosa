@@ -24,6 +24,12 @@ check_port_available() {
     fi
 }
 
+setup_airflow_permissions() {
+    echo "Setting up Airflow permissions..."
+    mkdir -p ./logs ./dags ./plugins
+    chmod -R 777 ./logs ./dags ./plugins
+}
+
 run_tests() {
     echo "Running unit tests..."
     make test-unit
@@ -77,6 +83,7 @@ configure_grafana() {
 
 main() {
     check_docker
+    # setup_airflow_permissions
     check_docker_compose
     check_port_available ${AIRFLOW_WEBSERVER_PORT}
     check_port_available ${POSTGRES_PORT}
