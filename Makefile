@@ -48,4 +48,5 @@ clean:
 	docker-compose down -v
 	rm -rf $(VENV)
 
-all: build up
+all: ./setup.sh
+# all: build up
