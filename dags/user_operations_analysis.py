@@ -76,7 +76,7 @@ def aggregate_data(**kwargs):
 
     query = """
     SELECT
-        DATE_TRUNC('hour', block_time) as hour,
+        DATE_TRUNC('hour', block_time::timestamp) as hour,
         COUNT(*) as operation_count
     FROM
         user_operations

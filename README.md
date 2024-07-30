@@ -121,6 +121,7 @@ To access the DB data:
 1. `docker exec -it yuza-sosa-postgres-1 bash`
 2. `psql -U airflow -d airflow`
 3. `SELECT * FROM user_operations LIMIT 10;`
+4. `SELECT * FROM aggregated_user_operations LIMIT 10;`
 
 ### Troubleshooting
 -----------------
