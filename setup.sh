@@ -30,6 +30,10 @@ setup_airflow_permissions() {
     chmod -R 777 ./logs ./dags ./plugins
 }
 
+copy_validate_airflow_files() {
+    docker cp validate_dags.py yuza-sosa-airflow-webserver-1:/opt/airflow/dags/
+}
+
 run_tests() {
     echo "Running unit tests..."
     make test-unit
@@ -37,7 +41,7 @@ run_tests() {
 
 set_airflow_variables() {
     echo "Setting Airflow variables..."
-    
+
     if [ ! -f .env ]; then
         echo ".env file not found. Please create a .env file with necessary variables."
         exit 1
@@ -77,7 +81,7 @@ configure_grafana() {
         "access":"proxy",
         "basicAuth":false
     }' http://${GF_SECURITY_ADMIN_USER}:${GF_SECURITY_ADMIN_PASSWORD}@localhost:${GRAFANA_PORT}/api/datasources
-    
+
     echo "Grafana configured with PostgreSQL data source."
 }
 
@@ -107,6 +111,8 @@ main() {
 
     configure_grafana
 
+    # copy_validate_airflow_files
+
     echo "Setup complete! Services are now running."
     echo "You can access the Airflow web interface at http://localhost:${AIRFLOW_WEBSERVER_PORT}"
     echo "Username: $AIRFLOW_WWW_USER_USERNAME"
@@ -114,9 +120,11 @@ main() {
     echo "You can access the Grafana web interface at http://localhost:${GRAFANA_PORT}"
     echo "Username: $GF_SECURITY_ADMIN_USER"
     echo "Password: $GF_SECURITY_ADMIN_PASSWORD"
-    
-    echo "Displaying logs. Press Ctrl+C to exit."
-    make logs
+
+
+
+    # echo "Displaying logs. Press Ctrl+C to exit."
+    # make logs
 }
 
 main

@@ -5,7 +5,7 @@ PIP = $(VENV)/bin/pip
 include .env
 export
 
-.PHONY: build up down logs shell init run all grafana-logs grafana-shell clean sync-dags restart-airflow
+.PHONY: build up down logs shell init run all grafana-logs grafana-shell clean sync-dags restart-airflow pre-commit test-unit
 
 $(VENV)/bin/activate: requirements.txt
 	python3 -m venv $(VENV)
@@ -25,6 +25,10 @@ down:
 
 logs:
 	docker-compose logs -f
+
+pre-commit:
+	pre-commit install
+	pre-commit run --all-files
 
 sync-dags:
 	docker cp dags/. yuza-sosa-airflow-webserver-1:/opt/airflow/dags
@@ -55,5 +59,5 @@ clean:
 	docker-compose down -v
 	rm -rf $(VENV)
 
-all: ./setup.sh
-# all: build up
+# all: ./setup.sh
+all: build up
