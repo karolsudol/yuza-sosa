@@ -136,6 +136,10 @@ If you encounter any issues:
 sudo chown -R airflow:airflow /opt/airflow
 ```
 5. If fails, set manually `DUNE_API_KEY` can be done in airflow.cfg or console
+6. check export paths in modules are not recognised
+```bash
+export PYTHONPATH=dags/:$PYTHONPATH
+```
 
 ### TODO
 ------
