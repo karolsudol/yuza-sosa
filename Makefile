@@ -12,7 +12,7 @@ $(VENV)/bin/activate: requirements.txt
 	$(PIP) install -r requirements.txt
 
 test-unit: $(VENV)/bin/activate
-	# $(PYTHON) -m unittest tests/test_ETL.py
+	$(PYTHON) -m unittest test_user_operations_analysis.py
 
 build:
 	docker-compose build

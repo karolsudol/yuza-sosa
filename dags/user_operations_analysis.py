@@ -69,6 +69,31 @@ def get_dune_data(**kwargs):
     )
 
 
+def aggregate_data(**kwargs):
+    """Aggregate data by date and hour and store it in PostgreSQL."""
+    pg_hook = PostgresHook(postgres_conn_id="postgres_default")
+    engine = pg_hook.get_sqlalchemy_engine()
+
+    query = """
+    SELECT
+        DATE_TRUNC('hour', block_time::timestamp) as hour,
+        COUNT(*) as operation_count
+    FROM
+        user_operations
+    GROUP BY
+        hour
+    """
+
+    aggregated_df = pd.read_sql(query, engine)
+
+    aggregated_df.to_sql(
+        "aggregated_user_operations",
+        engine,
+        if_exists="replace",
+        index=False,
+    )
+
+
 if AIRFLOW_AVAILABLE:
     default_args = {
         "owner": "airflow",
@@ -101,7 +126,14 @@ if AIRFLOW_AVAILABLE:
         dag=dag,
     )
 
-    check_connection >> dune_task
+    aggregate_task = PythonOperator(
+        task_id="aggregate_data",
+        python_callable=aggregate_data,
+        provide_context=True,
+        dag=dag,
+    )
+
+    check_connection >> dune_task >> aggregate_task
 
 else:
     print("Airflow not available. DAG not created.")
@@ -109,3 +141,4 @@ else:
 if __name__ == "__main__":
     check_postgres_connection()
     get_dune_data()
+    aggregate_data()

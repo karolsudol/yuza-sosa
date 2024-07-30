@@ -28,4 +28,4 @@ COPY requirements.txt /requirements.txt
 RUN pip install --user --no-cache-dir -r /requirements.txt
 
 # Copy DAG file to airflow home directory
-COPY dags/ETL.py /opt/airflow/dags/ETL.py
+COPY dags/user_operations_analysis.py /opt/airflow/dags/user_operations_analysis.py
