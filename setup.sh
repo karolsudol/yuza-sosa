@@ -87,7 +87,10 @@ main() {
     echo "Building Docker images..."
     make build
 
-    echo "Running tests..."
+    # echo "Running tests..."
+    # run_tests
+
+    echo "Skippping tests..."
     run_tests
 
     echo "Initializing Airflow..."
