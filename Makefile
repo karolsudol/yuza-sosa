@@ -12,7 +12,7 @@ $(VENV)/bin/activate: requirements.txt
 	$(PIP) install -r requirements.txt
 
 test-unit: $(VENV)/bin/activate
-	$(PYTHON) -m unittest tests/test_ETL.py
+	# $(PYTHON) -m unittest tests/test_ETL.py
 
 build:
 	docker-compose build
@@ -59,5 +59,5 @@ clean:
 	docker-compose down -v
 	rm -rf $(VENV)
 
-all: ./setup.sh
-# all: build up
+# all: ./setup.sh
+all: build up

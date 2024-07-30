@@ -4,10 +4,20 @@ It fetches data from Dune Analytics, processes it, and stores the results in Pos
 """
 
 from datetime import datetime, timedelta
+import pandas as pd
+from dune_client.types import QueryParameter
+from dune_client.client import DuneClient
+from dune_client.query import QueryBase
+from airflow.models import Variable
 from airflow.hooks.base import BaseHook
 from airflow.exceptions import AirflowException
 
+DUNE_API_KEY = Variable.get("DUNE_API_KEY")
+DUNE_QUERY_ID = 3953351  # Hardcoded query ID
+
+# Calculate previous day's date in UTC
 PREVIOUS_DAY = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+START_DATE = PREVIOUS_DAY
 
 try:
     from airflow import DAG
@@ -30,16 +40,40 @@ def check_postgres_connection():
         raise
 
 
-def print_execution_date(execution_date):
-    """Print the execution date."""
-    print(f"Execution date: {execution_date}")
+def get_dune_data(**kwargs):
+    """Fetch data from Dune Analytics and store it in PostgreSQL."""
+    query = QueryBase(
+        name="User Operations",
+        query_id=DUNE_QUERY_ID,
+        params=[
+            QueryParameter.text_type(
+                name="StartDate",
+                value=START_DATE,
+            ),
+            QueryParameter.text_type(
+                name="EndDate",
+                value=START_DATE,
+            ),
+        ],
+    )
+    dune = DuneClient(api_key=DUNE_API_KEY, request_timeout=600)
+
+    results_df = dune.run_query_dataframe(query)
+
+    pg_hook = PostgresHook(postgres_conn_id="postgres_default")
+    results_df.to_sql(
+        "user_operations",
+        pg_hook.get_sqlalchemy_engine(),
+        if_exists="replace",
+        index=False,
+    )
 
 
 if AIRFLOW_AVAILABLE:
     default_args = {
         "owner": "airflow",
         "depends_on_past": False,
-        "start_date": datetime(2024, 7, 31),
+        "start_date": datetime(2024, 7, 24),
         "email_on_failure": False,
         "email_on_retry": False,
         "retries": 0,
@@ -47,10 +81,10 @@ if AIRFLOW_AVAILABLE:
     }
 
     dag = DAG(
-        "ETL",
+        "user_operations_analysis",
         default_args=default_args,
-        description="A DAG to analyze UserOperation events.",
-        schedule_interval="0 9 * * *",  # Every day at 9am
+        description="A DAG to analyze user operations from Dune Analytics",
+        schedule_interval="0 9 * * *",
         catchup=False,
     )
 
@@ -60,17 +94,18 @@ if AIRFLOW_AVAILABLE:
         dag=dag,
     )
 
-    print_execution_date_task = PythonOperator(
-        task_id="print_execution_date",
-        python_callable=print_execution_date,
-        op_args=[PREVIOUS_DAY],  # Pass the argument here
+    dune_task = PythonOperator(
+        task_id="get_dune_data",
+        python_callable=get_dune_data,
+        provide_context=True,
         dag=dag,
     )
 
-    check_connection >> print_execution_date_task
+    check_connection >> dune_task
 
 else:
     print("Airflow not available. DAG not created.")
 
 if __name__ == "__main__":
-    print_execution_date(PREVIOUS_DAY)
+    check_postgres_connection()
+    get_dune_data()

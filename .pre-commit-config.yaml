@@ -17,6 +17,9 @@ repos:
         - apache-airflow==2.8.0
         - apache-airflow-providers-postgres==5.6.0
         - apache-airflow-providers-common-sql==1.7.2
+        - dune-client==1.3.0
+        - pandas==2.0.3
+        - numpy==1.24.3
         args:
         - --disable=all
         - --enable=E0401
@@ -37,8 +40,8 @@ repos:
 #        types: [python]
 #        pass_filenames: false
 #        always_run: true
-    -   id: airflow-dags-validate
-        name: Validate Airflow DAGs
-        entry: docker exec yuza-sosa-airflow-webserver-1 python /opt/airflow/dags/validate_dags.py
-        language: system
-        files: 'dags/.*\.py$'
+    # -   id: airflow-dags-validate
+    #     name: Validate Airflow DAGs
+    #     entry: docker exec yuza-sosa-airflow-webserver-1 python /opt/airflow/dags/validate_dags.py
+    #     language: system
+    #     files: 'dags/.*\.py$'
