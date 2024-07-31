@@ -28,6 +28,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
+      - ./pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf # Map the custom pg_hba.conf
     ports:
       - "5433:5432" # Mapping the internal port 5432 to external port 5433
     healthcheck:
