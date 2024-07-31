@@ -1,0 +1,49 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "New Dashboard",
+    "timezone": "browser",
+    "schemaVersion": 30,
+    "version": 0,
+    "panels": [
+      {
+        "type": "barchart",
+        "title": "Stacked Bar Chart",
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "time_series",
+            "rawSql": "SELECT hour, category, operation_count FROM view_final_results",
+            "timeColumn": "hour",
+            "metricColumn": "category",
+            "timeColumnType": "timestamp"
+          }
+        ],
+        "stack": true,
+        "bars": true,
+        "legend": {
+          "show": true
+        },
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "name": "Time"
+        },
+        "yaxis": {
+          "show": true,
+          "format": "short"
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "id": 1
+      }
+    ],
+    "refresh": "5s"
+  },
+  "overwrite": false
+}
