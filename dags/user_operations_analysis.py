@@ -13,7 +13,8 @@ from airflow.hooks.base import BaseHook
 from airflow.exceptions import AirflowException
 
 DUNE_API_KEY = Variable.get("DUNE_API_KEY")
-DUNE_QUERY_ID = 3953351  # Hardcoded query ID
+DUNE_QUERY_ID_1 = 3953351
+DUNE_QUERY_ID_2 = 3955394
 
 # Calculate previous day's date in UTC
 PREVIOUS_DAY = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -40,11 +41,11 @@ def check_postgres_connection():
         raise
 
 
-def get_dune_data(**kwargs):
+def get_dune_data(query_id, table_name, **kwargs):
     """Fetch data from Dune Analytics and store it in PostgreSQL."""
     query = QueryBase(
         name="User Operations",
-        query_id=DUNE_QUERY_ID,
+        query_id=query_id,
         params=[
             QueryParameter.text_type(
                 name="StartDate",
@@ -62,7 +63,7 @@ def get_dune_data(**kwargs):
 
     pg_hook = PostgresHook(postgres_conn_id="postgres_default")
     results_df.to_sql(
-        "user_operations",
+        table_name,
         pg_hook.get_sqlalchemy_engine(),
         if_exists="replace",
         index=False,
@@ -94,6 +95,45 @@ def aggregate_data(**kwargs):
     )
 
 
+def match_and_store_data(**kwargs):
+    """Match data from user_operations with addresses and store it in bundler_transactions."""
+    pg_hook = PostgresHook(postgres_conn_id="postgres_default")
+    engine = pg_hook.get_sqlalchemy_engine()
+
+    addresses_df = pd.read_sql("SELECT addresses FROM addresses", engine)
+    addresses_list = addresses_df["addresses"].tolist()
+    addresses_param = ",".join(addresses_list)
+
+    query = QueryBase(
+        name="Bundler Transactions",
+        query_id=DUNE_QUERY_ID_2,
+        params=[
+            QueryParameter.text_type(
+                name="StartDate",
+                value=START_DATE,
+            ),
+            QueryParameter.text_type(
+                name="EndDate",
+                value=START_DATE,
+            ),
+            QueryParameter.text_type(
+                name="TransactionSenders",
+                value=addresses_param,
+            ),
+        ],
+    )
+
+    dune = DuneClient(api_key=DUNE_API_KEY, request_timeout=600)
+    results_df = dune.run_query_dataframe(query)
+
+    results_df.to_sql(
+        "bundler_transactions",
+        pg_hook.get_sqlalchemy_engine(),
+        if_exists="replace",
+        index=False,
+    )
+
+
 if AIRFLOW_AVAILABLE:
     default_args = {
         "owner": "airflow",
@@ -119,9 +159,10 @@ if AIRFLOW_AVAILABLE:
         dag=dag,
     )
 
-    dune_task = PythonOperator(
-        task_id="get_dune_data",
+    dune_task_1 = PythonOperator(
+        task_id="get_dune_data_1",
         python_callable=get_dune_data,
+        op_kwargs={"query_id": DUNE_QUERY_ID_1, "table_name": "user_operations"},
         provide_context=True,
         dag=dag,
     )
@@ -133,12 +174,20 @@ if AIRFLOW_AVAILABLE:
         dag=dag,
     )
 
-    check_connection >> dune_task >> aggregate_task
+    match_and_store_task = PythonOperator(
+        task_id="match_and_store_data",
+        python_callable=match_and_store_data,
+        provide_context=True,
+        dag=dag,
+    )
+
+    check_connection >> dune_task_1 >> aggregate_task >> match_and_store_task
 
 else:
     print("Airflow not available. DAG not created.")
 
 if __name__ == "__main__":
     check_postgres_connection()
-    get_dune_data()
+    get_dune_data(query_id=DUNE_QUERY_ID_1, table_name="user_operations")
     aggregate_data()
+    match_and_store_data()
