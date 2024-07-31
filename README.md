@@ -1,11 +1,14 @@
 
 # yuza-sosa
 
+Airflow scheduler pulling data from Dune, storing it in a Postgres database and creating Grafana Dahbaords.
+
+
 **Table of Contents**
 -------------------
+* [Quick Start](#quick-start)
 * [Contributing](#contributing)
 * [Prerequisites](#prerequisites)
-* [Quick Start](#quick-start)
 * [Manual Setup](#manual-setup)
 * [Project Structure](#project-structure)
 * [Customization](#customization)
@@ -14,6 +17,28 @@
 * [Troubleshooting](#troubleshooting)
 * [TODO](#todo)
 * [License](#license)
+
+
+### Quick Start
+-------------
+
+To set up and run the entire project, simply execute:
+
+```
+chmod +x setup.sh
+./setup.sh
+```
+
+this will set up the Docker images, initialize Airflow, start Airflow services, and run the DAGs.
+
+with
+- airflow on http://localhost:8080/
+- graphana on http://localhost:3000/
+
+After running the schedulers dags `copy_csv_to_postgres` and `user_operations_analysis.py` you can access the data in the Grafana dashboards or/and querying the final view table:
+```sql
+SELECT hour, category, operation_count FROM view_final_results ORDER BY hour;
+```
 
 ### Contributing
 ---------------
@@ -47,21 +72,6 @@ make sure you set .env with:
 DUNE_API_KEY={YOUR_KEY}
 ```
 
-### Quick Start
--------------
-
-To set up and run the entire project, simply execute:
-
-```
-chmod +x setup.sh
-./setup.sh
-```
-
-this will set up the Docker images, initialize Airflow, start Airflow services, and run the DAGs.
-
-with
-- airflow on http://localhost:8080/
-- graphana on http://localhost:3000/
 
 ### Manual Setup
 -------------
@@ -78,9 +88,10 @@ If you prefer to run the commands manually, you can use the following Make comma
 ### Project Structure
 -----------------
 
-* `dags/daily_etl.py`: The main Airflow DAG file
+* `dags/user_operations_analysis.py.py`: The main Airflow DAG file that pulls data off and on chain
 * `dags/validate_dags.py.py`: The helper script to validate the DAGs
-* `dbt_project/` DBT project config example - includes the DBT models and seeds
+* `dags/copy_csv_to_postgres.py`: The helper script to copy the CSV files to the DB
+* `dags/google_sheet_to_postgres.py`: The helper script to copy from sheets files to the DB
 * `Dockerfile`: Defines the Docker image for Airflow
 * `docker-compose.yml`: Defines the services (Airflow, PostgreSQL)
 * `requirements.txt`: Lists the Python dependencies
@@ -122,7 +133,7 @@ To access the DB data:
 2. `psql -U airflow -d airflow`
 3. or `psql -h localhost -p 5433 -U airflow -d airflow`
 3. `SELECT * FROM user_operations LIMIT 10;`
-4. `SELECT * FROM aggregated_user_operations LIMIT 10;`
+4. `select * from view_final_results;`
 
 ### Troubleshooting
 -----------------
@@ -145,7 +156,11 @@ export PYTHONPATH=dags/:$PYTHONPATH
 
 ### TODO
 ------
-
+- set `google_sheet_to_postgres` with service_accout_key
+- better naming convention for DAGs and tables
+- validate and add more tests
+- add more dashboards
+- partition tables
 
 
 ### License
