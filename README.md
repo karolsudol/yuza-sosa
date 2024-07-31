@@ -3,11 +3,12 @@
 
 Airflow scheduler pulling data from Dune, storing it in a Postgres database and creating Grafana Dahbaords.
 
+
 **Table of Contents**
 -------------------
+* [Quick Start](#quick-start)
 * [Contributing](#contributing)
 * [Prerequisites](#prerequisites)
-* [Quick Start](#quick-start)
 * [Manual Setup](#manual-setup)
 * [Project Structure](#project-structure)
 * [Customization](#customization)
@@ -16,6 +17,28 @@ Airflow scheduler pulling data from Dune, storing it in a Postgres database and 
 * [Troubleshooting](#troubleshooting)
 * [TODO](#todo)
 * [License](#license)
+
+
+### Quick Start
+-------------
+
+To set up and run the entire project, simply execute:
+
+```
+chmod +x setup.sh
+./setup.sh
+```
+
+this will set up the Docker images, initialize Airflow, start Airflow services, and run the DAGs.
+
+with
+- airflow on http://localhost:8080/
+- graphana on http://localhost:3000/
+
+After running the schedulers dags `copy_csv_to_postgres` and `user_operations_analysis.py` you can access the data in the Grafana dashboards or/and querying the final view table:
+```sql
+SELECT hour, category, operation_count FROM view_final_results ORDER BY hour;
+```
 
 ### Contributing
 ---------------
@@ -49,21 +72,6 @@ make sure you set .env with:
 DUNE_API_KEY={YOUR_KEY}
 ```
 
-### Quick Start
--------------
-
-To set up and run the entire project, simply execute:
-
-```
-chmod +x setup.sh
-./setup.sh
-```
-
-this will set up the Docker images, initialize Airflow, start Airflow services, and run the DAGs.
-
-with
-- airflow on http://localhost:8080/
-- graphana on http://localhost:3000/
 
 ### Manual Setup
 -------------
