@@ -21,11 +21,11 @@ repos:
         - pandas==2.0.3
         - numpy==1.24.3
         - pytest==7.4.0
+        - gspread==6.1.2
         args:
         - --disable=all
         - --enable=E0401
         - --errors-only
-        - dags/ETL.py
 -   repo: local
     hooks:
     -   id: requirements
