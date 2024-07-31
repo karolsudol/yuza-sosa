@@ -10,7 +10,7 @@ GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1QJEYDOr-AMD2bNAoupfj
 SHEET_NAME = "Bundlers"  # Adjust as necessary
 
 # PostgreSQL table name
-POSTGRES_TABLE = "entity_addresses"
+POSTGRES_TABLE = "bundlers"
 
 # Define default arguments for the DAG
 default_args = {
@@ -68,7 +68,7 @@ def insert_data_into_postgres():
     df.to_sql(
         POSTGRES_TABLE,
         engine,
-        if_exists="replace",  # Change to 'append' if you don't want to replace the table
+        if_exists="replace",  # Change to 'append' if  not to replace the table every time
         index=False,
     )
 
