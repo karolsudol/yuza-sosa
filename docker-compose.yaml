@@ -29,7 +29,7 @@ services:
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     ports:
-      - ${POSTGRES_PORT}:5433
+      - "5433:5432" # Mapping the internal port 5432 to external port 5433
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
       interval: 5s
@@ -71,6 +71,8 @@ services:
       - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    env_file:
+      - .env # Ensure this line is added to load environment variables from .env file
     volumes:
       - grafana-storage:/var/lib/grafana
       - ./provisioning:/etc/grafana/provisioning

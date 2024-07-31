@@ -4,7 +4,7 @@ datasources:
   - name: PostgreSQL
     type: postgres
     access: proxy
-    url: postgres:5432
+    url: postgres:5432  # Adjusted for Linux host host.docker.internal:5432  # For Docker for Mac and Windows
     user: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     database: ${POSTGRES_DB}
